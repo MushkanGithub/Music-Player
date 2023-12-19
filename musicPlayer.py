@@ -1,14 +1,16 @@
 # Music Player
 from tkinter import *
 from tkinter import filedialog
+from mutagen.mp3 import MP3   # for song length (pip install mutagen)
 # filedialog: modal dialog box, when shown blocks the rest application until user has chosen a file
 # provides classes and factory funcs for creating file/directory selection window
 from pygame import mixer  # to play music
 import os  # to open folder in our local system
+import time
 
 root=Tk()
 root.title("Music Player")
-root.geometry("1100x670+270+85")
+root.geometry("1100x700+270+85")
 root.configure(bg="#0f1a2b")
 root.resizable(False,False)  # not-resizable
 
@@ -27,11 +29,35 @@ def open_folder():
             if song.endswith(".mp3"):
                 playlist.insert(END,song)
 
+#label for lengthbar
+lengthbar=Label(root,text='Song Duration:-00:00',bg="black",fg='white',font=20)
+lengthbar.place(x=110,y=670)
+
 def play_song():
     music_name=playlist.get(ACTIVE)
     mixer.music.load(music_name)
     mixer.music.play()
     music.config(text=music_name[0:-4])
+    # select mp3 song
+    song_mut = MP3(music_name)
+    # get song's length
+    song_mut_length = song_mut.info.length
+    print(song_mut_length)
+    # convert into min. and sec.
+    convert_song_mut_length=time.strftime('%M:%S',time.gmtime(song_mut_length))  # string-format time
+    print(convert_song_mut_length)
+    #blit on screen
+    lengthbar.config(text=f'Song Duration:-00:{convert_song_mut_length}')
+
+#function for volume bar
+def volume(vol):
+    volume=int(vol)/100
+    mixer.music.set_volume(volume)
+
+def mute():
+    volumebar.set(0)
+    l=Label(root,text="On Mute",bg="cyan").place(x=816,y=57)
+    l.pack()
 
 #icon
 image_icon=PhotoImage(file="music_logo.png")
@@ -59,9 +85,16 @@ Button(root,image=resume_button,bg="#0f1a2b",bd=0,command=mixer.music.unpause).p
 pause_button=PhotoImage(file="pause.png")
 Button(root,image=pause_button,bg="#0f1a2b",bd=0,command=mixer.music.pause).place(x=118,y=540)
 
+#volume-bar
+volImg=PhotoImage(file="volume_icon.png")
+Button(root,image=volImg,bg='white',bd=0,command=mute).place(x=820,y=10)
+volumebar=Scale(root,from_=0,to=100,orient=HORIZONTAL,bg='cyan',length=175,command=volume)
+volumebar.place(x=880,y=10)
+volumebar.set(25)
+
 #label
 music=Label(root,text="",font=("arial",18),fg="black",bg="#7DF9FF")
-music.place(x=420,y=250,anchor="center")
+music.place(x=429,y=250,anchor="center")
 
 #music
 Menu=PhotoImage(file="menu.png")
